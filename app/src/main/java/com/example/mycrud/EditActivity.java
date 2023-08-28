@@ -39,29 +39,30 @@ public class EditActivity extends AppCompatActivity {
     public void loadData(){
         try {
             bancoDados = openOrCreateDatabase("crudapp", MODE_PRIVATE, null);
-            Cursor cursor = bancoDados.rawQuery("SELECT id, nome FROM pessoa WHERE id = " + id.toString(), null);
+            Cursor cursor = bancoDados.rawQuery("SELECT nome, idade FROM pessoa WHERE id = " + id.toString(), null);
             cursor.moveToFirst();
-            editTextNome.setText(cursor.getString(1));
+            editTextNome.setText(cursor.getString(0));
+            editTextIdade.setText(cursor.getString(1));
             cursor.close();
         } catch (Exception e){
             e.printStackTrace();
         }
     }
 
-    public void edit(){
-        String valueNome;
-        valueNome = editTextNome.getText().toString();
+    public void edit() {
         try{
             bancoDados = openOrCreateDatabase("crudapp", MODE_PRIVATE, null);
-            String sql = "UPDATE pessoa SET nome=? WHERE id=?";
+            String sql = "UPDATE pessoa SET nome=?, idade=? WHERE id=?";
             SQLiteStatement stmt = bancoDados.compileStatement(sql);
-            stmt.bindString(1,valueNome);
-            stmt.bindLong(2,id);
+            stmt.bindString(1, editTextNome.getText().toString());
+            stmt.bindLong(2, Integer.parseInt(editTextIdade.getText().toString()));
+            stmt.bindLong(3, id);
             stmt.executeUpdateDelete();
             bancoDados.close();
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            finish();
         }
-        finish();
     }
 }

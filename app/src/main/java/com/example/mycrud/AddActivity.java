@@ -29,22 +29,22 @@ public class AddActivity extends AppCompatActivity {
                 cadastrar();
             }
         });
-
-
     }
 
-    public void cadastrar(){
+    public void cadastrar() {
         try{
             bancoDados = openOrCreateDatabase("crudapp", MODE_PRIVATE, null);
             String sql = "INSERT INTO pessoa (nome,idade) VALUES (?,?)";
             SQLiteStatement stmt = bancoDados.compileStatement(sql);
-            stmt.bindString(1,editTextName.getText().toString());
+            stmt.bindString(1, editTextName.getText().toString());
             stmt.bindLong(2, Integer.parseInt(editTextIdade.getText().toString()) );
             stmt.executeInsert();
             bancoDados.close();
             finish();
-        }catch (Exception e){
+        } catch (Exception e){
             e.printStackTrace();
+        } finally {
+            finish();
         }
     }
 }

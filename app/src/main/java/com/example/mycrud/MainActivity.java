@@ -60,9 +60,13 @@ public class MainActivity extends AppCompatActivity {
     public void CreateDataBase(){
         try {
             dataBase = openOrCreateDatabase("crudapp", MODE_PRIVATE, null);
-            dataBase.execSQL("CREATE TABLE IF NOT EXISTS pessoa(" +
-                    " id INTEGER PRIMARY KEY AUTOINCREMENT" +
-                    " , nome VARCHAR)");
+            dataBase.execSQL(
+                "CREATE TABLE IF NOT EXISTS pessoa (" +
+                "  id INTEGER PRIMARY KEY AUTOINCREMENT," +
+                "  nome VARCHAR," +
+                "  idade INTEGER" +
+                ")"
+            );
             dataBase.close();
         } catch (Exception e) {
             e.printStackTrace();
@@ -71,7 +75,6 @@ public class MainActivity extends AppCompatActivity {
 
     public boolean HasData() {
         boolean result = false;
-        Log.w("Entrou", "" + result);
 
         try {
             int howMany = 0;
@@ -120,16 +123,19 @@ public class MainActivity extends AppCompatActivity {
     public void InsertTempData(){
         try{
             dataBase = openOrCreateDatabase("crudapp", MODE_PRIVATE, null);
-            String sql = "INSERT INTO pessoa (nome) VALUES (?)";
+            String sql = "INSERT INTO pessoa (nome, idade) VALUES (?, ?)";
             SQLiteStatement stmt = dataBase.compileStatement(sql);
 
-            stmt.bindString(1,"Coisa 1");
+            stmt.bindString(1,"Exemplo 1");
+            stmt.bindLong(2, 20);
             stmt.executeInsert();
 
-            stmt.bindString(1,"Coisa abc");
+            stmt.bindString(1,"Exemplo 2");
+            stmt.bindLong(2, 20);
             stmt.executeInsert();
 
-            stmt.bindString(1,"Coisa Terceira");
+            stmt.bindString(1,"Exemplo 3");
+            stmt.bindLong(2, 20);
             stmt.executeInsert();
 
             dataBase.close();
@@ -142,13 +148,12 @@ public class MainActivity extends AppCompatActivity {
         AlertDialog.Builder msgBox = new AlertDialog.Builder(MainActivity.this);
         msgBox.setTitle("Excluir");
         msgBox.setIcon(android.R.drawable.ic_menu_delete);
-        msgBox.setMessage("Você realmente deseja Delete esse registro?");
+        msgBox.setMessage("Você realmente deseja deletar esse registro?");
         msgBox.setPositiveButton("Sim", (dialogInterface, i) -> {
             Delete();
             ListData();
         });
-        msgBox.setNegativeButton("Não", (dialogInterface, i) -> {
-        });
+        msgBox.setNegativeButton("Não", (dialogInterface, i) -> { });
         msgBox.show();
     }
 
@@ -156,7 +161,7 @@ public class MainActivity extends AppCompatActivity {
         //Toast.makeText(this, i.toString(), Toast.LENGTH_SHORT).show();
         try{
             dataBase = openOrCreateDatabase("crudapp", MODE_PRIVATE, null);
-            String sql = "DELETE FROM pessoa WHERE id =?";
+            String sql = "DELETE FROM pessoa WHERE id = ?";
             SQLiteStatement stmt = dataBase.compileStatement(sql);
             stmt.bindLong(1, selectedId);
             stmt.executeUpdateDelete();
