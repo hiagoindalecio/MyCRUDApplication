@@ -18,9 +18,6 @@ import java.util.ArrayList;
 public class MainActivity extends AppCompatActivity {
     private SQLiteDatabase dataBase;
     public ListView listViewDados;
-    public Button botao;
-    public ArrayList<Integer> arrayIds;
-    public Integer selectedId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,20 +25,9 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         listViewDados = findViewById(R.id.listViewDados);
-        botao = findViewById(R.id.btnAdd);
+        Button botao = findViewById(R.id.btnAdd);
 
         botao.setOnClickListener(view -> OpenAddScreen());
-
-        listViewDados.setOnItemLongClickListener((adapterView, view, i, l) -> {
-            selectedId = arrayIds.get(i);
-            ConfirmDelete();
-            return true;
-        });
-
-        listViewDados.setOnItemClickListener((adapterView, view, i, l) -> {
-            selectedId = arrayIds.get(i);
-            OpenEditScreen();
-        });
 
         CreateDataBase();
 
@@ -78,7 +64,6 @@ public class MainActivity extends AppCompatActivity {
 
         try {
             int howMany = 0;
-            arrayIds = new ArrayList<>();
             dataBase = openOrCreateDatabase("crudapp", MODE_PRIVATE, null);
             Cursor myCursor = dataBase.rawQuery("SELECT COUNT(1) AS HowMany FROM pessoa", null);
             if (myCursor.moveToFirst() && myCursor.getCount() > 0)
@@ -96,24 +81,20 @@ public class MainActivity extends AppCompatActivity {
 
     public void ListData(){
         try {
-            arrayIds = new ArrayList<>();
             dataBase = openOrCreateDatabase("crudapp", MODE_PRIVATE, null);
-            Cursor myCursor = dataBase.rawQuery("SELECT id, nome FROM pessoa", null);
-            ArrayList<String> lines = new ArrayList<>();
-            ArrayAdapter<String> meuAdapter = new ArrayAdapter<>(
-                    this,
-                    android.R.layout.simple_list_item_1,
-                    android.R.id.text1,
-                    lines
-            );
-            listViewDados.setAdapter(meuAdapter);
-            myCursor.moveToFirst();
-            while(myCursor!=null) {
-                lines.add(myCursor.getString(1));
-                arrayIds.add(myCursor.getInt(0));
-                myCursor.moveToNext();
+            Cursor myCursor = dataBase.rawQuery("SELECT id, nome, idade FROM pessoa", null);
+            ArrayList<Pessoa> pessoasArray = new ArrayList<>();
+            if(myCursor.moveToFirst()) {
+                while (myCursor.moveToNext()) {
+                    Integer id = myCursor.getInt(myCursor.getColumnIndexOrThrow("id"));
+                    String nome = myCursor.getString(myCursor.getColumnIndexOrThrow("nome"));
+                    Integer idade = myCursor.getInt(myCursor.getColumnIndexOrThrow("idade"));
+
+                    pessoasArray.add(new Pessoa(id, nome, idade));
+                }
             }
 
+            listViewDados.setAdapter(new CustomListAdapter(this, pessoasArray));
             myCursor.close();
         } catch (Exception e){
             e.printStackTrace();
@@ -142,40 +123,6 @@ public class MainActivity extends AppCompatActivity {
         }catch (Exception e){
             e.printStackTrace();
         }
-    }
-
-    public void ConfirmDelete() {
-        AlertDialog.Builder msgBox = new AlertDialog.Builder(MainActivity.this);
-        msgBox.setTitle("Excluir");
-        msgBox.setIcon(android.R.drawable.ic_menu_delete);
-        msgBox.setMessage("Você realmente deseja deletar esse registro?");
-        msgBox.setPositiveButton("Sim", (dialogInterface, i) -> {
-            Delete();
-            ListData();
-        });
-        msgBox.setNegativeButton("Não", (dialogInterface, i) -> { });
-        msgBox.show();
-    }
-
-    public void Delete(){
-        //Toast.makeText(this, i.toString(), Toast.LENGTH_SHORT).show();
-        try{
-            dataBase = openOrCreateDatabase("crudapp", MODE_PRIVATE, null);
-            String sql = "DELETE FROM pessoa WHERE id = ?";
-            SQLiteStatement stmt = dataBase.compileStatement(sql);
-            stmt.bindLong(1, selectedId);
-            stmt.executeUpdateDelete();
-            ListData();
-            dataBase.close();
-        }catch(Exception e){
-            e.printStackTrace();
-        }
-    }
-
-    public void OpenEditScreen(){
-        Intent intent = new Intent(this, EditActivity.class);
-        intent.putExtra("id", selectedId);
-        startActivity(intent);
     }
 
     public void OpenAddScreen(){
