@@ -2,7 +2,6 @@ package com.example.mycrud;
 
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
@@ -76,16 +75,12 @@ public class CustomListAdapter extends BaseAdapter {
                 AlertDialog.Builder builder = new AlertDialog.Builder(layoutInflater.getContext());
                 builder.setTitle("Excluir");
                 builder.setMessage("Deseja realmente excluir?");
-                builder.setPositiveButton("Sim", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface arg0, int arg1) {
-                        removerPessoa(listData.get(position).getId());
-                        listData.remove(position);
-                        notifyDataSetChanged();
-                    }
+                builder.setPositiveButton("Sim", (arg0, arg1) -> {
+                    removerPessoa(listData.get(position).getId());
+                    listData.remove(position);
+                    notifyDataSetChanged();
                 });
-                builder.setNegativeButton("Não", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface arg0, int arg1) {
-                    }
+                builder.setNegativeButton("Não", (arg0, arg1) -> {
                 });
 
                 alerta = builder.create();

@@ -10,6 +10,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MyCrud">
         <activity
+            android:name=".AddUserActivity"
+            android:exported="false" />
+        <activity
             android:name=".EditActivity"
             android:exported="false" />
         <activity

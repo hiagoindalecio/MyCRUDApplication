@@ -1,18 +1,16 @@
 package com.example.mycrud;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.ListView;
-
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
@@ -21,13 +19,15 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        SharedPreferences sharedPref = getSharedPreferences("sharedpref", MODE_PRIVATE);
+        String login = sharedPref.getString("login","");
+        if (login == null)
+            OpenLoginScreen();
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         listViewDados = findViewById(R.id.listViewDados);
-        Button botao = findViewById(R.id.btnAdd);
-
-        botao.setOnClickListener(view -> OpenAddScreen());
 
         CreateDataBase();
 
@@ -35,6 +35,8 @@ public class MainActivity extends AppCompatActivity {
             InsertTempData();
 
         ListData();
+
+        registerForContextMenu(listViewDados);
     }
 
     @Override
@@ -43,7 +45,27 @@ public class MainActivity extends AppCompatActivity {
         ListData();
     }
 
-    public void CreateDataBase(){
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.add:
+                OpenAddScreen();
+                return true;
+            case R.id.exit:
+                Logoff();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    private void CreateDataBase(){
         try {
             dataBase = openOrCreateDatabase("crudapp", MODE_PRIVATE, null);
             dataBase.execSQL(
@@ -59,7 +81,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public boolean HasData() {
+    private boolean HasData() {
         boolean result = false;
 
         try {
@@ -79,7 +101,7 @@ public class MainActivity extends AppCompatActivity {
         return result;
     }
 
-    public void ListData(){
+    private void ListData(){
         try {
             dataBase = openOrCreateDatabase("crudapp", MODE_PRIVATE, null);
             Cursor myCursor = dataBase.rawQuery("SELECT id, nome, idade FROM pessoa", null);
@@ -101,7 +123,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void InsertTempData(){
+    private void InsertTempData(){
         try{
             dataBase = openOrCreateDatabase("crudapp", MODE_PRIVATE, null);
             String sql = "INSERT INTO pessoa (nome, idade) VALUES (?, ?)";
@@ -125,8 +147,22 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void OpenAddScreen(){
+    private void OpenAddScreen(){
         Intent intent = new Intent(this, AddActivity.class);
         startActivity(intent);
+    }
+
+    private void OpenLoginScreen(){
+        Intent intent = new Intent(this, LoginActivity.class);
+        startActivity(intent);
+    }
+
+    private void Logoff() {
+        SharedPreferences sharedPref = getSharedPreferences("sharedpref", MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.clear();
+        editor.commit();
+
+        OpenLoginScreen();
     }
 }
