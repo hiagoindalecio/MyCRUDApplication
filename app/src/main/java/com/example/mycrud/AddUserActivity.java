@@ -8,6 +8,7 @@ import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 public class AddUserActivity extends AppCompatActivity {
     SQLiteDatabase dataBase;
@@ -38,15 +39,17 @@ public class AddUserActivity extends AppCompatActivity {
             editTextSenha.setError("Campo obrigatório!");
         } else {
             try {
-                dataBase = openOrCreateDatabase("sharedpref", MODE_PRIVATE, null);
-                String sql = "INSERT INTO usuario (login,senha) VALUES (?,?)";
+                dataBase = openOrCreateDatabase("crudapp", MODE_PRIVATE, null);
+                String sql = "INSERT INTO usuario (login, senha) VALUES (?, ?)";
                 SQLiteStatement stmt = dataBase.compileStatement(sql);
                 stmt.bindString(1, editTextLogin.getText().toString());
                 stmt.bindString(2, editTextSenha.getText().toString());
                 stmt.executeInsert();
                 dataBase.close();
+                Toast.makeText(this, "Usuário criado com sucesso!", Toast.LENGTH_SHORT).show();
                 finish();
             } catch (Exception e) {
+                Toast.makeText(this, "Ocorreu um erro na criação do usuário!", Toast.LENGTH_SHORT).show();
                 e.printStackTrace();
             }
         }

@@ -10,33 +10,39 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ListView;
+import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
     private SQLiteDatabase dataBase;
-    public ListView listViewDados;
+    private ListView listViewDados;
+    private int idUsuario;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        SharedPreferences sharedPref = getSharedPreferences("sharedpref", MODE_PRIVATE);
-        String login = sharedPref.getString("login","");
-        if (login == null)
-            OpenLoginScreen();
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        listViewDados = findViewById(R.id.listViewDados);
+        SharedPreferences sharedPref = getSharedPreferences("sharedpref", MODE_PRIVATE);
+        idUsuario = sharedPref.getInt("idUser", 0);
 
-        CreateDataBase();
+        if (idUsuario == 0) {
+            Toast.makeText(this, "Faça o login para prosseguir", Toast.LENGTH_SHORT).show();
+            OpenLoginScreen();
+        } else {
+            listViewDados = findViewById(R.id.listViewDados);
 
-        if (!HasData())
-            InsertTempData();
+            CreateDataBase();
 
-        ListData();
+            if (!HasData())
+                InsertTempData();
 
-        registerForContextMenu(listViewDados);
+            ListData();
+
+            registerForContextMenu(listViewDados);
+        }
     }
 
     @Override
@@ -72,7 +78,8 @@ public class MainActivity extends AppCompatActivity {
                 "CREATE TABLE IF NOT EXISTS pessoa (" +
                 "  id INTEGER PRIMARY KEY AUTOINCREMENT," +
                 "  nome VARCHAR," +
-                "  idade INTEGER" +
+                "  idade INTEGER," +
+                "  idUsuario INTEGER" +
                 ")"
             );
             dataBase.close();
@@ -87,7 +94,7 @@ public class MainActivity extends AppCompatActivity {
         try {
             int howMany = 0;
             dataBase = openOrCreateDatabase("crudapp", MODE_PRIVATE, null);
-            Cursor myCursor = dataBase.rawQuery("SELECT COUNT(1) AS HowMany FROM pessoa", null);
+            Cursor myCursor = dataBase.rawQuery("SELECT COUNT(1) AS HowMany FROM pessoa WHERE idUsuario = " + idUsuario, null);
             if (myCursor.moveToFirst() && myCursor.getCount() > 0)
                 howMany = myCursor.getInt(0);
             if (howMany > 0)
@@ -104,16 +111,16 @@ public class MainActivity extends AppCompatActivity {
     private void ListData(){
         try {
             dataBase = openOrCreateDatabase("crudapp", MODE_PRIVATE, null);
-            Cursor myCursor = dataBase.rawQuery("SELECT id, nome, idade FROM pessoa", null);
+            Cursor myCursor = dataBase.rawQuery("SELECT id, nome, idade FROM pessoa where idUsuario = " + idUsuario, null);
             ArrayList<Pessoa> pessoasArray = new ArrayList<>();
             if(myCursor.moveToFirst()) {
-                while (myCursor.moveToNext()) {
+                do {
                     Integer id = myCursor.getInt(myCursor.getColumnIndexOrThrow("id"));
                     String nome = myCursor.getString(myCursor.getColumnIndexOrThrow("nome"));
                     Integer idade = myCursor.getInt(myCursor.getColumnIndexOrThrow("idade"));
 
                     pessoasArray.add(new Pessoa(id, nome, idade));
-                }
+                } while (myCursor.moveToNext());
             }
 
             listViewDados.setAdapter(new CustomListAdapter(this, pessoasArray));
@@ -126,19 +133,22 @@ public class MainActivity extends AppCompatActivity {
     private void InsertTempData(){
         try{
             dataBase = openOrCreateDatabase("crudapp", MODE_PRIVATE, null);
-            String sql = "INSERT INTO pessoa (nome, idade) VALUES (?, ?)";
+            String sql = "INSERT INTO pessoa (nome, idade, idUsuario) VALUES (?, ?, ?)";
             SQLiteStatement stmt = dataBase.compileStatement(sql);
 
-            stmt.bindString(1,"Exemplo 1");
+            stmt.bindString(1, "Exemplo 1");
             stmt.bindLong(2, 20);
+            stmt.bindLong(3, idUsuario);
             stmt.executeInsert();
 
-            stmt.bindString(1,"Exemplo 2");
+            stmt.bindString(1, "Exemplo 2");
             stmt.bindLong(2, 20);
+            stmt.bindLong(3, idUsuario);
             stmt.executeInsert();
 
-            stmt.bindString(1,"Exemplo 3");
+            stmt.bindString(1, "Exemplo 3");
             stmt.bindLong(2, 20);
+            stmt.bindLong(3, idUsuario);
             stmt.executeInsert();
 
             dataBase.close();

@@ -1,7 +1,6 @@
 package com.example.mycrud;
 
 import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
@@ -34,12 +33,13 @@ public class LoginActivity extends AppCompatActivity {
         btnLogin.setOnClickListener(view -> Enter());
     }
 
-    public void CreateDataBase(){
+    public void CreateDataBase() {
         try {
             dataBase = openOrCreateDatabase("crudapp", MODE_PRIVATE, null);
-            dataBase.execSQL("CREATE TABLE IF NOT EXISTS usuario(" +
-                            "   login VARCHAR PRIMARY KEY" +
-                            " , senha VARCHAR NOT NULL" +
+            dataBase.execSQL("CREATE TABLE IF NOT EXISTS usuario (" +
+                            "  id INTEGER PRIMARY KEY AUTOINCREMENT," +
+                            "  login VARCHAR NOT NULL," +
+                            "  senha VARCHAR NOT NULL" +
                             " ) " );
             dataBase.close();
         } catch (Exception e) {
@@ -47,27 +47,33 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
 
-    public void OpenAddNewUser(){
+    public void OpenAddNewUser() {
         Intent intent = new Intent(this, AddUserActivity.class);
         startActivity(intent);
     }
 
-    public void Enter(){
-        dataBase = openOrCreateDatabase("crudapp", MODE_PRIVATE, null);
-        String login = editTextLogin.getText().toString();
-        String senha = editTextPass.getText().toString();
-        Cursor cursor = dataBase.rawQuery("SELECT login FROM usuario WHERE login = '"+login+"' AND senha = '"+senha+"'", null);
+    public void Enter() {
+        try {
+            dataBase = openOrCreateDatabase("crudapp", MODE_PRIVATE, null);
+            String login = editTextLogin.getText().toString();
+            String senha = editTextPass.getText().toString();
+            Cursor cursor = dataBase.rawQuery("SELECT id, login FROM usuario WHERE login = '"+login+"' AND senha = '"+senha+"'", null);
 
-        if (cursor.moveToFirst()){
-            SharedPreferences sharedPref = getSharedPreferences("sharedpref", MODE_PRIVATE);
-            SharedPreferences.Editor editor = sharedPref.edit();
-            editor.putString("login", login);
-            editor.commit();
-            Intent intent = new Intent(this,MainActivity.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            startActivity(intent);
-        } else {
-            Toast.makeText(this, "Usuário ou senha inexistente!", Toast.LENGTH_SHORT).show();
+            if (cursor.moveToFirst()) {
+                SharedPreferences sharedPref = getSharedPreferences("sharedpref", MODE_PRIVATE);
+                SharedPreferences.Editor editor = sharedPref.edit();
+                editor.putString("login", login);
+                editor.putInt("idUser", cursor.getInt(cursor.getColumnIndexOrThrow("id")));
+                editor.commit();
+                Intent intent = new Intent(this,MainActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
+            } else {
+                Toast.makeText(this, "Usuário ou senha inexistente!", Toast.LENGTH_SHORT).show();
+            }
+        } catch (Exception e) {
+            Toast.makeText(this, "Ocorreu um erro ao coletar as informações de login!", Toast.LENGTH_SHORT).show();
+            e.printStackTrace();
         }
     }
 }

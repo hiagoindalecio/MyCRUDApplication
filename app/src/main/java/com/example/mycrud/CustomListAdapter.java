@@ -64,7 +64,7 @@ public class CustomListAdapter extends BaseAdapter {
         holder.imageViewEdit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                alterarPessoa(listData.get(position).getId());
+                Change(listData.get(position).getId());
             }
         });
 
@@ -76,7 +76,7 @@ public class CustomListAdapter extends BaseAdapter {
                 builder.setTitle("Excluir");
                 builder.setMessage("Deseja realmente excluir?");
                 builder.setPositiveButton("Sim", (arg0, arg1) -> {
-                    removerPessoa(listData.get(position).getId());
+                    Delete(listData.get(position).getId());
                     listData.remove(position);
                     notifyDataSetChanged();
                 });
@@ -93,9 +93,9 @@ public class CustomListAdapter extends BaseAdapter {
         return convertView;
     }
 
-    public void removerPessoa(Integer id){
+    public void Delete(Integer id){
         try {
-            bancoDados = layoutInflater.getContext().openOrCreateDatabase("clicklist", layoutInflater.getContext().MODE_PRIVATE , null);
+            bancoDados = layoutInflater.getContext().openOrCreateDatabase("crudapp", layoutInflater.getContext().MODE_PRIVATE , null);
             String sql = "DELETE FROM pessoa WHERE id = ?";
             SQLiteStatement stmt = bancoDados.compileStatement(sql);
             stmt.bindLong(1, id);
@@ -104,10 +104,9 @@ public class CustomListAdapter extends BaseAdapter {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
     }
 
-    public void alterarPessoa(Integer id){
+    public void Change(Integer id){
         Intent intent = new Intent(layoutInflater.getContext(),EditActivity.class);
         intent.putExtra("id",id);
         layoutInflater.getContext().startActivity(intent);
