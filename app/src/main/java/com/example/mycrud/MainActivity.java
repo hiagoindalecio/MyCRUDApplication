@@ -10,6 +10,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -32,6 +33,9 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, "Faça o login para prosseguir", Toast.LENGTH_SHORT).show();
             OpenLoginScreen();
         } else {
+            TextView txtLogin = findViewById(R.id.txtLogin);
+            txtLogin.setText(sharedPref.getString("login", ""));
+
             listViewDados = findViewById(R.id.listViewDados);
 
             CreateDataBase();
@@ -171,7 +175,7 @@ public class MainActivity extends AppCompatActivity {
         SharedPreferences sharedPref = getSharedPreferences("sharedpref", MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.clear();
-        editor.commit();
+        editor.apply();
 
         OpenLoginScreen();
     }
